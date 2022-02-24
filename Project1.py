@@ -1,21 +1,21 @@
-from sklearn.utils import shuffle
 import numpy as np
 import csv
+import matplotlib.pyplot as plt
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 from sklearn.metrics import confusion_matrix, accuracy_score
 from sklearn.model_selection import KFold
 from sklearn.linear_model import LogisticRegression
 from scipy import interp
 from sklearn.metrics import roc_curve, auc
 from sklearn import metrics
-import matplotlib.pyplot as plt
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
+from sklearn.utils import shuffle
 
 # Length of data + label
 dataLabel = 20;
 # Length of data without label (Feature Vector)
 dataLength = 19
 
-# .csv files created in matlab
+# .csv files created in matlab -- see additional code
 with open('label_0.csv') as csvfile:
     reader0 = csv.reader(csvfile, delimiter=',')
     c0 = np.zeros((1000,dataLabel ))
@@ -44,17 +44,18 @@ features, label = shuffle(features, label)
 # Assign 1600 features for training and 400 features for testing (20%)
 kf = KFold(n_splits=5)
 kf.get_n_splits(features)
-#Logistic Regression
+# Binary Logistic Regression
 j = 0
+# Save each "fold" into an array to display accuracy and AUC graphically
 AreaUnderCurve = np.zeros(5)
 test_accuracy = np.zeros(5)
 # Compute the sensitivity, specificity and accuracy
 for train_index, test_index in kf.split(features):
-    print("TRAIN:", train_index.shape, "TEST:", test_index.shape)
     features_train, features_test = features[train_index], features[test_index]
     label_train, label_test = label[train_index], label[test_index]
-
-    trained_model = LogisticRegression(random_state=0, solver='lbfgs', multi_class='multinomial').fit(features_train,label_train)
+    # lbfgs (Limited-memory Broyden–Fletcher–Goldfarb–Shanno) is the default solver.
+    # Had to increase max iterations from default of 100 to avoid error
+    trained_model = LogisticRegression(random_state=0, solver='lbfgs', max_iter=500, multi_class='auto').fit(features_train,label_train)
     predict = trained_model.predict(features_test)
     predict_probability = trained_model.predict_proba(features_test)[::, 1]
     scorei = accuracy_score(label_test, predict)
@@ -66,20 +67,26 @@ for train_index, test_index in kf.split(features):
     conf = confusion_matrix(label_test, predict)
     sensitivity = conf[0, 0] / (conf[0, 0] + conf[1, 0])
     specificity = conf[1, 1] / (conf[0, 1] + conf[1, 1])
-    print(specificity, "Specificity: %0.2f" % np.mean(specificity))
-    print(sensitivity, "Sensitivity: %0.2f" % np.mean(sensitivity))
-
+    print("Fold " + str(j+1))
+    print("Specificity: %0.2f" % np.mean(specificity))
+    print("Sensitivity: %0.2f" % np.mean(sensitivity))
+    
     plt.plot(fpr, tpr, lw=1, alpha=0.3, label='(AUC = %0.2f) ROC fold %d ' % (auc, (j+1)))
-    #print(th)
     j+=1
+    
+# plot results
 plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
 plt.title('ROC for Logistic Regression')
 plt.legend(loc="lower right")
 plt.show()
 
-print(test_accuracy, "Test Accuracy: %0.2f"% np.mean(test_accuracy))
-print(AreaUnderCurve, "AUC: %0.2f"% np.mean(AreaUnderCurve))
+# Display Numerical Results
+print('\n');
+print('Average of 5 Folds');
+print("Test Accuracy: %0.2f"% np.mean(test_accuracy))
+print("AUC: %0.2f"% np.mean(AreaUnderCurve))
+print('\n');
 
 # Train another classifier of your choice (e.g. LDA, SVM,
 # neural network). Plot the ROC curve and compute the AUC.
@@ -88,7 +95,6 @@ j = 0
 AreaUnderCurve = np.zeros(5)
 test_accuracy = np.zeros(5)
 for train_index, test_index in kf.split(features):
-    print("TRAIN:", train_index.shape, "TEST:", test_index.shape)
     features_train, features_test = features[train_index], features[test_index]
     label_train, label_test = label[train_index], label[test_index]
 
@@ -103,21 +109,24 @@ for train_index, test_index in kf.split(features):
     conf = confusion_matrix(label_test, predict)
     sensitivity = conf[0, 0] / (conf[0, 0] + conf[1, 0])
     specificity = conf[1, 1] / (conf[0, 1] + conf[1, 1])
-    print(specificity, "Specificity: %0.2f" % np.mean(specificity))
-    print(sensitivity, "Sensitivity: %0.2f" % np.mean(sensitivity))
-
+    print("Fold " + str(j+1))
+    print("Specificity: %0.2f" % np.mean(specificity))
+    print("Sensitivity: %0.2f" % np.mean(sensitivity))
     plt.plot(fpr, tpr, lw=1, alpha=0.3, label='(AUC = %0.2f) ROC fold %d ' % (auc, (j+1)))
-
     j+=1
 
+# plot results
 plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
 plt.title('ROC for LDA')
 plt.legend(loc="lower right")
 plt.show()
 
-print(test_accuracy, "Test Accuracy: %0.2f"% np.mean(test_accuracy))
-print(AreaUnderCurve, "Area Under Curve: %0.2f"% np.mean(AreaUnderCurve))
+# Display Numerical Results
+print('\n');
+print('Average of 5 Folds');
+print("Test Accuracy: %0.2f"% np.mean(test_accuracy))
+print("Area Under Curve: %0.2f"% np.mean(AreaUnderCurve))
 
 
 
