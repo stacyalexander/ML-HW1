@@ -12,7 +12,7 @@ from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 
 # Length of data + label
 dataLabel = 20;
-# Length of data without label
+# Length of data without label (Feature Vector)
 dataLength = 19
 
 # .csv files created in matlab
@@ -32,22 +32,23 @@ with open('label_1.csv') as csvfile:
         c1[i,:] = row1
         i += 1
 
-# Concat the two data sets on a single access.
+# Concatenate the two data sets
 data = np.concatenate((c0 , c1), axis=0)
 # Features are the first 19 sets of data
 features = data[:,0:dataLength]
 # Label is 0 or 1 appended to the end of the data
 label = data[:,dataLength]
-# Shuffle to get better results with KFold
+# Shuffle
 features, label = shuffle(features, label)
+# Use 5-fold cross-validation to train a logistic regression classifier.
+# Assign 1600 features for training and 400 features for testing (20%)
 kf = KFold(n_splits=5)
 kf.get_n_splits(features)
-
-#---------------------------------------LogisticRegression------------------------------------------------------------
-
+#Logistic Regression
 j = 0
-aucs = np.zeros(5)
+AreaUnderCurve = np.zeros(5)
 test_accuracy = np.zeros(5)
+# Compute the sensitivity, specificity and accuracy
 for train_index, test_index in kf.split(features):
     print("TRAIN:", train_index.shape, "TEST:", test_index.shape)
     features_train, features_test = features[train_index], features[test_index]
@@ -60,7 +61,7 @@ for train_index, test_index in kf.split(features):
     test_accuracy[j] = scorei
     fpr, tpr, th = metrics.roc_curve(label_test, predict_probability)
     auc = metrics.roc_auc_score(label_test, predict)
-    aucs[j] = auc
+    AreaUnderCurve[j] = auc
 
     conf = confusion_matrix(label_test, predict)
     sensitivity = conf[0, 0] / (conf[0, 0] + conf[1, 0])
@@ -68,29 +69,26 @@ for train_index, test_index in kf.split(features):
     print(specificity, "Specificity: %0.2f" % np.mean(specificity))
     print(sensitivity, "Sensitivity: %0.2f" % np.mean(sensitivity))
 
-    plt.plot(fpr, tpr, lw=1, alpha=0.3, label='(AUC = %0.2f) ROC fold %d ' % (auc, j))
+    plt.plot(fpr, tpr, lw=1, alpha=0.3, label='(AUC = %0.2f) ROC fold %d ' % (auc, (j+1)))
     #print(th)
     j+=1
-
-plt.xlim([-0.05, 1.05])
-plt.ylim([-0.05, 1.05])
 plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
 plt.title('ROC for Logistic Regression')
 plt.legend(loc="lower right")
 plt.show()
 
-
 print(test_accuracy, "Test Accuracy: %0.2f"% np.mean(test_accuracy))
-print(aucs, "AUC: %0.2f"% np.mean(aucs))
+print(AreaUnderCurve, "AUC: %0.2f"% np.mean(AreaUnderCurve))
 
-#------------Linear Discreminent Analysis-----------------------------------------
-
+# Train another classifier of your choice (e.g. LDA, SVM,
+# neural network). Plot the ROC curve and compute the AUC.
+# LDA
 j = 0
-aucs = np.zeros(5)
+AreaUnderCurve = np.zeros(5)
 test_accuracy = np.zeros(5)
 for train_index, test_index in kf.split(features):
-    # print("TRAIN:", train_index.shape, "TEST:", test_index.shape)
+    print("TRAIN:", train_index.shape, "TEST:", test_index.shape)
     features_train, features_test = features[train_index], features[test_index]
     label_train, label_test = label[train_index], label[test_index]
 
@@ -101,28 +99,25 @@ for train_index, test_index in kf.split(features):
     test_accuracy[j] = scorei
     fpr, tpr, _ = metrics.roc_curve(label_test, predict_probability)
     auc = metrics.roc_auc_score(label_test, predict)
-    aucs[j] = auc
+    AreaUnderCurve[j] = auc
     conf = confusion_matrix(label_test, predict)
     sensitivity = conf[0, 0] / (conf[0, 0] + conf[1, 0])
     specificity = conf[1, 1] / (conf[0, 1] + conf[1, 1])
     print(specificity, "Specificity: %0.2f" % np.mean(specificity))
     print(sensitivity, "Sensitivity: %0.2f" % np.mean(sensitivity))
 
-    plt.plot(fpr, tpr, lw=1, alpha=0.3, label='(AUC = %0.2f) ROC fold %d ' % (auc, j))
+    plt.plot(fpr, tpr, lw=1, alpha=0.3, label='(AUC = %0.2f) ROC fold %d ' % (auc, (j+1)))
 
     j+=1
 
-plt.xlim([-0.05, 1.05])
-plt.ylim([-0.05, 1.05])
 plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
 plt.title('ROC for LDA')
 plt.legend(loc="lower right")
 plt.show()
 
-
 print(test_accuracy, "Test Accuracy: %0.2f"% np.mean(test_accuracy))
-print(aucs, "AUC: %0.2f"% np.mean(aucs))
+print(AreaUnderCurve, "Area Under Curve: %0.2f"% np.mean(AreaUnderCurve))
 
 
 
