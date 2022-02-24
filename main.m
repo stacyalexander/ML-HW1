@@ -18,7 +18,5 @@ for i = 1:1000
     labeled_data0(i,20) = 0;
 end
 
-%class0 = [class0',zeros(1000,1)];
-%class1 = [class1',ones(1000,1)];
 csvwrite('class_label_0.csv',labeled_data0);
 csvwrite('class_label_1.csv',labeled_data1);
