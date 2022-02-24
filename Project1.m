@@ -18,5 +18,6 @@ for i = 1:1000
     labeled_data0(i,20) = 0;
 end
 
-csvwrite('class_label_0.csv',labeled_data0);
-csvwrite('class_label_1.csv',labeled_data1);
+% Write labeled data so CSV file to process in Python
+csvwrite('label_0.csv',labeled_data0);
+csvwrite('label_1.csv',labeled_data1);

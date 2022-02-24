@@ -16,7 +16,7 @@ dataLabel = 20;
 dataLength = 19
 
 # .csv files created in matlab
-with open('class_label_0.csv') as csvfile:
+with open('label_0.csv') as csvfile:
     reader0 = csv.reader(csvfile, delimiter=',')
     c0 = np.zeros((1000,dataLabel ))
     i = 0
@@ -24,7 +24,7 @@ with open('class_label_0.csv') as csvfile:
         c0[i, :] = row0
         i += 1
 
-with open('class_label_1.csv') as csvfile:
+with open('label_1.csv') as csvfile:
     reader1 = csv.reader(csvfile, delimiter=',')
     c1 = np.zeros((1000,dataLabel))
     i=0
@@ -32,11 +32,13 @@ with open('class_label_1.csv') as csvfile:
         c1[i,:] = row1
         i += 1
 
-
+# Concat the two data sets on a single access.
 data = np.concatenate((c0 , c1), axis=0)
+# Features are the first 19 sets of data
 features = data[:,0:dataLength]
+# Label is 0 or 1 appended to the end of the data
 label = data[:,dataLength]
-
+# Shuffle to get better results with KFold
 features, label = shuffle(features, label)
 kf = KFold(n_splits=5)
 kf.get_n_splits(features)
@@ -47,7 +49,7 @@ j = 0
 aucs = np.zeros(5)
 test_accuracy = np.zeros(5)
 for train_index, test_index in kf.split(features):
-    # print("TRAIN:", train_index.shape, "TEST:", test_index.shape)
+    print("TRAIN:", train_index.shape, "TEST:", test_index.shape)
     features_train, features_test = features[train_index], features[test_index]
     label_train, label_test = label[train_index], label[test_index]
 
