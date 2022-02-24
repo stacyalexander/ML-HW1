@@ -10,11 +10,15 @@ from sklearn import metrics
 import matplotlib.pyplot as plt
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 
+# Length of data + label
+dataLabel = 20;
+# Length of data without label
+dataLength = 19
 
-
+# .csv files created in matlab
 with open('class_label_0.csv') as csvfile:
     reader0 = csv.reader(csvfile, delimiter=',')
-    c0 = np.zeros((1000, 55))
+    c0 = np.zeros((1000,dataLabel ))
     i = 0
     for row0 in reader0:
         c0[i, :] = row0
@@ -22,15 +26,16 @@ with open('class_label_0.csv') as csvfile:
 
 with open('class_label_1.csv') as csvfile:
     reader1 = csv.reader(csvfile, delimiter=',')
-    c1 = np.zeros((1000,55))
+    c1 = np.zeros((1000,dataLabel))
     i=0
     for row1 in reader1:
         c1[i,:] = row1
         i += 1
 
+
 data = np.concatenate((c0 , c1), axis=0)
-features = data[:,0:54]
-label = data[:,54]
+features = data[:,0:dataLength]
+label = data[:,dataLength]
 
 features, label = shuffle(features, label)
 kf = KFold(n_splits=5)
